@@ -16,7 +16,7 @@ load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = os.getenv("GROQ_MODEL")
 HF_AUTH_TOKEN = os.getenv("HF_AUTH_TOKEN")
-
+const port = process.env.PORT || 8080 
 with open("PERFECT_SESSIONS.txt", "r", encoding="utf-8") as f:
     PERFECT_SESSIONS = f.read()
 
