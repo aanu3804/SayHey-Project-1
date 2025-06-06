@@ -1,1 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="/pic.png">
+  <title>Conversation Intelligence System - SayHey</title>
+  
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1d2b64, #f8cdda);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    h1.heading {
+      font-family: 'Orbitron', sans-serif;
+      text-align: center;
+      font-size: 3rem;
+      margin-bottom: 50px;
+      color: #fff;
+      text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px #fff;
+      }
+      to {
+        text-shadow: 0 0 20px #ff6ec4, 0 0 30px #ff6ec4, 0 0 40px #ff6ec4;
+      }
+    }
+
+    .dot-typing {
+  display: inline-block;
+  position: relative;
+  width: 60px;
+  height: 1em;
+  vertical-align: middle;
+}
+
+.dot-typing::before {
+  content: '';
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+  animation: dotTyping 1.5s infinite ease-in-out;
+}
+
+@keyframes dotTyping {
+  0% {
+    box-shadow: 10px 0 0 0 rgba(255, 255, 255, 0.2),
+                20px 0 0 0 rgba(255, 255, 255, 0.2);
+  }
+  25% {
+    box-shadow: 10px 0 0 0 white,
+                20px 0 0 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 10px 0 0 0 white,
+                20px 0 0 0 white;
+  }
+  75% {
+    box-shadow: 10px 0 0 0 rgba(255, 255, 255, 0.2),
+                20px 0 0 0 white;
+  }
+  100% {
+    box-shadow: 10px 0 0 0 rgba(255, 255, 255, 0.2),
+                20px 0 0 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .btn-gradient {
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-gradient:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 114, 255, 0.5);
+    }
+
+    #uploadProgress {
+      width: 100%;
+      height: 20px;
+      display: none;
+      margin-top: 10px;
+    }
+
+    #resultSection h2 {
+      color: #fff;
+      margin-top: 30px;
+    }
+
+    .alert {
+      border-radius: 12px;
+    }
+
+    .waveform {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  gap: 4px;
+}
+
+.waveform span {
+  display: block;
+  width: 6px;
+  height: 100%;
+  background: white;
+  animation: wave 1.2s infinite ease-in-out;
+  border-radius: 10px;
+}
+
+.waveform span:nth-child(1) { animation-delay: 0s; }
+.waveform span:nth-child(2) { animation-delay: 0.1s; }
+.waveform span:nth-child(3) { animation-delay: 0.2s; }
+.waveform span:nth-child(4) { animation-delay: 0.3s; }
+.waveform span:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes wave {
+  0%, 100% { height: 10px; }
+  50% { height: 30px; }
+}
+
+    
+    #progressMessage {
+      background-color: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="heading">Conversation Intelligence System - SayHey</h1>
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="glass-card">
+          <form id="uploadForm" action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="file" class="text-white">Select your audio file:</label>
+              <input type="file" class="form-control-file" name="file" id="file" required />
+            </div>
+            <div class="form-group">
+              <progress id="uploadProgress" value="0" max="100"></progress>
+            </div>
+            
+            <div class="form-group">
+              <label for="past_summary" class="text-white">Paste your previous session summary to track progress (Optional)</label>
+              <textarea class="form-control" name="past_summary" id="past_summary" rows="4" placeholder="Enter previous summary if available..."></textarea>
+            </div>
+            <div class="form-group">
+              <button type="submit" id="uploadButton" class="btn btn-gradient btn-block">Upload & Analyze</button>
+            </div>
+          </form>
+          <div id="progressMessage" style="display: none;" class="alert text-center mt-3">
+            <div class="waveform">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div class="mt-2 font-weight-bold">Transcribing and Analyzing... Please wait.</div>
+          </div>
+          
+          
+          <div id="resultSection" class="mt-4">
+            <!-- Result will be injected here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#uploadForm').submit(function(e) {
+      e.preventDefault();
+
+      var formData = new FormData($(this)[0]);
+      
+
+      $('#uploadProgress').show();
+      $('#progressMessage').show();
+
+      $.ajax({
+        url: $(this).attr('action'),
+        type: 'POST',
+        data: formData,
+        async: true,
+        xhr: function () {
+          var xhr = new window.XMLHttpRequest();
+          xhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable) {
+              var percentComplete = (e.loaded / e.total) * 100;
+              $('#uploadProgress').attr('value', percentComplete);
+            }
+          }, false);
+          return xhr;
+        },
+        success: function (data) {
+          $('#uploadProgress').hide();
+          $('#progressMessage').hide();
+
+          let resultHtml = '';
+
+          if (data.transcript) {
+            const transcriptWithLineBreaks = data.transcript.replace(/\n/g, '<br>');
+            resultHtml += '<h2 class="text-center">Transcription</h2>' +
+                          '<div id="transcription" class="alert alert-info">' + transcriptWithLineBreaks + '</div>';
+          }
+
+          if (data.sentiment_analysis) {
+            resultHtml += '<h2 class="text-center">Summary</h2>' +
+                          '<div id="sentiment-analysis" class="alert alert-success">' + data.sentiment_analysis + '</div>';
+          }
+
+          if (data.recommendation) {
+            resultHtml += '<h2 class="text-center">Recommendation</h2>' +
+                          '<div id="recommendation" class="alert alert-warning">' + data.recommendation + '</div>';
+          }
+
+          if (data.rating) {
+            resultHtml += '<h2 class="text-center">Rating to Listener</h2>' +
+                          '<div id="rating" class="alert alert-primary">' + data.rating + '</div>';
+          }
+
+          $('#resultSection').html(resultHtml);
+
+          if (data.error) {
+            $('#resultSection').html('<div class="alert alert-danger">' + data.error + '</div>');
+          }
+        },
+        error: function () {
+          $('#progressMessage').hide();
+          $('#uploadProgress').hide();
+          $('#resultSection').html('<div class="alert alert-danger">An error occurred during file upload and processing.</div>');
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+      });
+
+      return false;
+    });
+  });
+</script>
+
+</body>
+</html>
 
