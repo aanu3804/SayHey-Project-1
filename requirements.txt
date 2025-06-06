@@ -6,9 +6,7 @@ google-auth-httplib2
 google-auth-oauthlib
 pydub
 pyannote.audio
-whisper
-torch
-requests
 openai-whisper
+torch
 torchaudio
-os
+requests
